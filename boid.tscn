@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3 uid="uid://ciihumnotf2mk"]
+
+[ext_resource type="Script" path="res://boid.gd" id="1_gn0r5"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_h8nft"]
+radius = 175.026
+
+[node name="Polygon2D" type="Polygon2D"]
+color = Color(1, 1, 1, 0.662745)
+polygon = PackedVector2Array(-12, -12, 24, 0, -12, 12)
+script = ExtResource("1_gn0r5")
+alignment_amount = 0.153
+separation_amount = 0.187
+
+[node name="Area2D" type="Area2D" parent="." groups=["boids"]]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(66, 0)
+shape = SubResource("CircleShape2D_h8nft")
+
+[connection signal="area_entered" from="Area2D" to="." method="_on_area_2d_area_entered"]
+[connection signal="area_exited" from="Area2D" to="." method="_on_area_2d_area_exited"]
