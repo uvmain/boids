@@ -9,13 +9,9 @@ radius = 53.0094
 color = Color(1, 1, 1, 0.662745)
 polygon = PackedVector2Array(-12, -12, 24, 0, -12, 12)
 script = ExtResource("1_gn0r5")
-speed = 613
-cohesion_amount = 8.022
-alignment_amount = 7.041
-separation_amount = 0.362
-tracking_amount = 100.0
 
 [node name="Area2D" type="Area2D" parent="." groups=["boids"]]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
 position = Vector2(29, 0)

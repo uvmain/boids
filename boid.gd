@@ -4,23 +4,24 @@ var boid_list : Array = []
 var velocity : Vector2
 var direction : Vector2
 var screensize
-var main
 
-@export var speed : int = 200
-@export_range(0.0, 100.0) var cohesion_amount = 20.0
-@export_range(0.0, 100.0) var alignment_amount = 20.5
-@export_range(0, 100) var separation_distance = 30
-@export_range(0.0, 1.0) var separation_amount = 1.0
-@export_range(0, 100) var tracking_amount = 1.5
+@onready var main = get_tree().get_first_node_in_group("main")
+@onready var boid_speed = main.boid_speed
+@onready var cohesion_amount = main.cohesion_amount
+@onready var alignment_amount = main.alignment_amount
+@onready var separation_distance = main.separation_distance
+@onready var separation_amount = main.separation_amount
+@onready var tracking_amount = main.tracking_amount
 
 
 func _ready():
 	screensize = DisplayServer.window_get_size()
-	main = get_tree().get_first_node_in_group("main")
+	
 	while velocity == Vector2.ZERO:
-		velocity = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized() * speed
-	await get_tree().create_timer(30.0).timeout
-	queue_free()
+		velocity = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized() * boid_speed
+	if is_instance_valid(main) && main.boids_die:
+		await get_tree().create_timer(30.0).timeout
+		queue_free()
 
 
 func _process(delta):
@@ -37,7 +38,7 @@ func _process(delta):
 		
 	velocity = (velocity + direction).normalized()
 	rotation = velocity.angle()
-	translate(velocity * delta * speed)
+	translate(velocity * delta * boid_speed)
 
 
 func flock_rules() -> Dictionary:
