@@ -1,56 +1,66 @@
 extends Node2D
 
 var boid_list : Array = []
+var velocity : Vector2
 var direction : Vector2
 var screensize
+var main
 
 @export var speed : int = 200
-@export_range(0.0, 1.0) var cohesion_amount = 0.01
-@export_range(0.0, 1.0) var alignment_amount = 0.01
-@export_range(0, 100) var separation_distance = 10
-@export_range(0.0, 1.0) var separation_amount = 0.01
-@export_range(0.0, 1.0) var tracking_amount = 0.1
+@export_range(0.0, 100.0) var cohesion_amount = 20.0
+@export_range(0.0, 100.0) var alignment_amount = 20.5
+@export_range(0, 100) var separation_distance = 30
+@export_range(0.0, 1.0) var separation_amount = 1.0
+@export_range(0, 100) var tracking_amount = 1.5
 
 
 func _ready():
 	screensize = DisplayServer.window_get_size()
-	direction = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
+	main = get_tree().get_first_node_in_group("main")
+	while velocity == Vector2.ZERO:
+		velocity = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized() * speed
 	await get_tree().create_timer(30.0).timeout
 	queue_free()
 
 
 func _process(delta):
 	check_for_offscreen()
-	var new_rotation = rotation
 	if boid_list:
 		var flock_data = flock_rules()
-		position = lerp(position, flock_data.average_position, cohesion_amount)
-		new_rotation = lerp(new_rotation, flock_data.average_rotation, alignment_amount)
-		direction = Vector2(cos(new_rotation), sin(new_rotation))
-		position = lerp(position, flock_data.separation_position, separation_amount)
-	direction = lerp(direction, position.direction_to(get_viewport().get_mouse_position()), tracking_amount)
-	position += (direction * speed * delta)
-	look_at(position + direction)
+		direction += flock_data.alignment * alignment_amount
+		direction += flock_data.cohesion * cohesion_amount
+		direction += flock_data.separation * separation_amount
+		
+	if main.follow_mouse:
+		var mouse_pos = ((get_viewport().get_mouse_position() - position) - velocity).normalized()
+		direction += mouse_pos * tracking_amount
+		
+	velocity = (velocity + direction).normalized()
+	rotation = velocity.angle()
+	translate(velocity * delta * speed)
 
 
 func flock_rules() -> Dictionary:
-	var average_rotation := 0.0
-	var average_position := Vector2.ZERO
-	var separation_position := Vector2.ZERO
-	var boids_too_close := 0
+	var cohesion = Vector2.ZERO
+	var alignment = Vector2.ZERO
+	var separation = Vector2.ZERO
+	var close_boids : Array = []
+	
 	for boid in boid_list:
-		average_position += boid.position
-		average_rotation += boid.rotation
+		cohesion += boid.position
+		alignment += boid.velocity
 		if position.distance_to(boid.position) < separation_distance:
-			boids_too_close += 1
+			close_boids.append(boid)
 			var difference = position - boid.position
-			separation_position += difference.normalized() / difference.length()
-	average_position /= boid_list.size()
-	average_rotation /= boid_list.size()
-	if boids_too_close > 0:
-		separation_position /= boids_too_close
-	separation_position += position
-	return { "average_position": average_position, "average_rotation": average_rotation, "separation_position": separation_position }
+			separation += difference.normalized() / difference.length()
+	cohesion /= boid_list.size()
+	cohesion = ((cohesion - position) - velocity).normalized()
+	alignment /= boid_list.size()
+	alignment = ((alignment - position) - velocity).normalized()
+	if close_boids:
+		separation /= close_boids.size()
+		separation = ((separation - position) - velocity).normalized()
+	return { "cohesion": cohesion, "alignment": alignment, "separation": separation }
 
 
 func check_for_offscreen():

@@ -9,7 +9,7 @@ size = Vector2(61, 727)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dptww"]
 size = Vector2(1249, 141)
 
-[node name="Main" type="Node2D"]
+[node name="Main" type="Node2D" groups=["main"]]
 script = ExtResource("1_1638c")
 boid_scene = ExtResource("2_5fsvm")
 
