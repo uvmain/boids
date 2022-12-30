@@ -9,8 +9,11 @@ radius = 175.026
 color = Color(1, 1, 1, 0.662745)
 polygon = PackedVector2Array(-12, -12, 24, 0, -12, 12)
 script = ExtResource("1_gn0r5")
-alignment_amount = 0.153
-separation_amount = 0.187
+cohesion_amount = 0.032
+alignment_amount = 0.091
+separation_distance = 89
+separation_amount = 0.973
+tracking_amount = 0.037
 
 [node name="Area2D" type="Area2D" parent="." groups=["boids"]]
 

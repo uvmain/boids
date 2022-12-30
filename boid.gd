@@ -1,7 +1,7 @@
 extends Node2D
 
 var boid_list : Array = []
-var direction := Vector2.ONE
+var direction : Vector2
 var screensize
 
 @export var speed : int = 200
@@ -9,6 +9,7 @@ var screensize
 @export_range(0.0, 1.0) var alignment_amount = 0.01
 @export_range(0, 100) var separation_distance = 10
 @export_range(0.0, 1.0) var separation_amount = 0.01
+@export_range(0.0, 1.0) var tracking_amount = 0.1
 
 
 func _ready():
@@ -20,14 +21,14 @@ func _ready():
 
 func _process(delta):
 	check_for_offscreen()
+	var new_rotation = rotation
 	if boid_list:
 		var flock_data = flock_rules()
-#		if flock_data.separation_position > Vector2.ZERO:
-#			print(flock_data)
 		position = lerp(position, flock_data.average_position, cohesion_amount)
-		var new_rotation = lerp(rotation, flock_data.average_rotation, alignment_amount)
+		new_rotation = lerp(new_rotation, flock_data.average_rotation, alignment_amount)
 		direction = Vector2(cos(new_rotation), sin(new_rotation))
-#		position = lerp(position, flock_data.separation_position, separation_amount)
+		position = lerp(position, flock_data.separation_position, separation_amount)
+	direction = lerp(direction, position.direction_to(get_viewport().get_mouse_position()), tracking_amount)
 	position += (direction * speed * delta)
 	look_at(position + direction)
 
@@ -36,18 +37,19 @@ func flock_rules() -> Dictionary:
 	var average_rotation := 0.0
 	var average_position := Vector2.ZERO
 	var separation_position := Vector2.ZERO
-	var boids_too_close := []
+	var boids_too_close := 0
 	for boid in boid_list:
 		average_position += boid.position
 		average_rotation += boid.rotation
 		if position.distance_to(boid.position) < separation_distance:
-			boids_too_close.append(boid)
-	for boid in boids_too_close:
-		separation_position += boid.position
+			boids_too_close += 1
+			var difference = position - boid.position
+			separation_position += difference.normalized() / difference.length()
 	average_position /= boid_list.size()
 	average_rotation /= boid_list.size()
-	if boids_too_close:
-		separation_position /= boids_too_close.size()
+	if boids_too_close > 0:
+		separation_position /= boids_too_close
+	separation_position += position
 	return { "average_position": average_position, "average_rotation": average_rotation, "separation_position": separation_position }
 
 
