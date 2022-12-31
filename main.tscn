@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://boqffcmrogo42"]
+[gd_scene load_steps=6 format=3 uid="uid://7q0nslac5r6v"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_1638c"]
-[ext_resource type="PackedScene" uid="uid://ciihumnotf2mk" path="res://boid.tscn" id="2_5fsvm"]
+[ext_resource type="PackedScene" uid="uid://ln3b8j35x3qw" path="res://boidarea2d.tscn" id="2_6rwd3"]
+[ext_resource type="PackedScene" uid="uid://ciihumnotf2mk" path="res://boidraycast.tscn" id="2_22l4l"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_uvy5c"]
 size = Vector2(61, 727)
@@ -11,12 +12,13 @@ size = Vector2(1249, 141)
 
 [node name="Main" type="Node2D" groups=["main"]]
 script = ExtResource("1_1638c")
-boid_scene = ExtResource("2_5fsvm")
+boid_area_scene = ExtResource("2_6rwd3")
+boid_ray_scene = ExtResource("2_22l4l")
 follow_mouse = true
-cohesion_amount = 25.882
-alignment_amount = 37.307
-separation_distance = 50
-tracking_amount = 368
+cohesion_amount = 58.667
+alignment_amount = 87.782
+separation_distance = 33
+tracking_amount = 392
 
 [node name="Area2D" type="Area2D" parent="." groups=["border"]]
 

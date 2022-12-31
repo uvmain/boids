@@ -1,10 +1,11 @@
-extends Area2D
+extends Polygon2D
 
 var boid_list : Array = []
 var close_boids : Array = []
 var velocity : Vector2
 var direction : Vector2
 var screensize
+var rays
 
 @onready var main = get_tree().get_first_node_in_group("main")
 @onready var boid_speed = main.boid_speed
@@ -17,6 +18,8 @@ var screensize
 
 func _ready():
 	screensize = DisplayServer.window_get_size()
+	rays = get_children()
+	color = Color(randf_range(0.0, 1.0), randf_range(0.0, 1.0), randf_range(0.0, 1.0), 1)
 	
 	while velocity == Vector2.ZERO:
 		velocity = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized() * boid_speed
@@ -27,6 +30,11 @@ func _ready():
 
 func _process(delta):
 	check_for_offscreen()
+	boid_list.clear()
+	for ray in rays:
+		var collider = ray.get_collider()
+		if collider:
+			boid_list.append(collider)
 	if boid_list:
 		var flock_data = flock_rules()
 		direction += flock_data.alignment * alignment_amount
@@ -38,7 +46,7 @@ func _process(delta):
 		direction += mouse_pos * tracking_amount
 		
 	velocity = (velocity + direction).normalized()
-	$Polygon2D.rotation = velocity.angle()
+	rotation = velocity.angle()
 	translate(velocity * delta * boid_speed)
 
 
@@ -71,13 +79,3 @@ func check_for_offscreen():
 			position.y = screensize.y
 		if position.y > screensize.y:
 			position.y = 0
-
-
-func _on_area_entered(area: Area2D):
-	if area.is_in_group("boids"):
-		boid_list.append(area)
-
-
-func _on_area_exited(area):
-	if area.is_in_group("boids"):
-		boid_list.erase(area)
