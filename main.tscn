@@ -18,7 +18,7 @@ follow_mouse = true
 cohesion_amount = 58.667
 alignment_amount = 87.782
 separation_distance = 33
-tracking_amount = 392
+tracking_amount = 295
 
 [node name="Area2D" type="Area2D" parent="." groups=["border"]]
 
