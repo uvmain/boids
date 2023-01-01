@@ -1,14 +1,15 @@
-[gd_scene load_steps=2 format=3 uid="uid://ciihumnotf2mk"]
+[gd_scene load_steps=3 format=3 uid="uid://ciihumnotf2mk"]
 
 [ext_resource type="Script" path="res://boidray.gd" id="1_125th"]
+[ext_resource type="Texture2D" uid="uid://mo5k4o3sy3am" path="res://boid.png" id="2_0ygr4"]
 
-[node name="Polygon2D" type="Polygon2D"]
+[node name="Boid" type="Area2D"]
 modulate = Color(1, 1, 1, 0.407843)
-polygon = PackedVector2Array(-12, -12, 24, 0, -12, 12)
 script = ExtResource("1_125th")
 
 [node name="RayCast2D" type="RayCast2D" parent="."]
 target_position = Vector2(73, 0)
+collide_with_bodies = false
 
 [node name="RayCast2D2" type="RayCast2D" parent="."]
 target_position = Vector2(37, 27)
@@ -21,3 +22,10 @@ target_position = Vector2(0, 30)
 
 [node name="RayCast2D5" type="RayCast2D" parent="."]
 target_position = Vector2(0, -26)
+
+[node name="Boid" type="Sprite2D" parent="."]
+visible = false
+texture = ExtResource("2_0ygr4")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+polygon = PackedVector2Array(-12, -12, 24, 0, -12, 12)

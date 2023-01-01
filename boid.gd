@@ -1,10 +1,10 @@
 extends Area2D
 
 var boid_list : Array = []
-var close_boids : Array = []
-var velocity : Vector2
-var direction : Vector2
-var screensize
+var close_boids : int = 0
+var direction := Vector2.ZERO
+var screensize : Vector2
+var colour : Color
 
 @onready var main = get_tree().get_first_node_in_group("main")
 @onready var boid_speed = main.boid_speed
@@ -17,9 +17,9 @@ var screensize
 
 func _ready():
 	screensize = DisplayServer.window_get_size()
+	colour = Color(randf_range(0.0, 1.0), randf_range(0.0, 1.0), randf_range(0.0, 1.0), 0.5)
 	
-	while velocity == Vector2.ZERO:
-		velocity = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized() * boid_speed
+	direction = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
 	if is_instance_valid(main) && main.boids_die:
 		await get_tree().create_timer(30.0).timeout
 		queue_free()
@@ -27,49 +27,52 @@ func _ready():
 
 func _process(delta):
 	check_for_offscreen()
+	close_boids = 0
 	if boid_list:
 		var flock_data = flock_rules()
-		direction += flock_data.alignment * alignment_amount
-		direction += flock_data.cohesion * cohesion_amount
-		direction += flock_data.separation * separation_amount
+		if flock_data[0] != Vector2.ZERO && alignment_amount > 0:
+			direction += flock_data[0] * alignment_amount
+		if flock_data[1] != Vector2.ZERO && cohesion_amount > 0:
+			direction += flock_data[1] * cohesion_amount
+		if flock_data[2] != Vector2.ZERO && separation_amount > 0:
+			direction += flock_data[2] * separation_amount
+#			position = lerp(position, position + flock_data[2], separation_amount)
 		
 	if main.follow_mouse:
-		var mouse_pos = ((get_viewport().get_mouse_position() - position)).normalized()
+		var mouse_pos = ((get_viewport().get_mouse_position() - position))
 		direction += mouse_pos * tracking_amount
-		
-	velocity = (velocity + direction).normalized()
-	$Polygon2D.rotation = velocity.angle()
-	translate(velocity * delta * boid_speed)
+	
+	rotation = direction.angle()
+	
+	translate(direction.normalized() * delta * boid_speed)
 
 
-func flock_rules() -> Dictionary:
+func flock_rules() -> Array:
 	var cohesion = Vector2.ZERO
 	var alignment = Vector2.ZERO
 	var separation = Vector2.ZERO
-	close_boids.clear()
 	
 	for boid in boid_list:
 		cohesion += boid.position
-		alignment += boid.velocity
+		alignment += boid.direction
 		if position.distance_to(boid.position) < separation_distance:
-			close_boids.append(boid)
-			var difference = position - boid.position
-			separation += difference.normalized() / difference.length()
-	cohesion = (((cohesion / boid_list.size()) - position) - velocity).normalized()
-	alignment = (((alignment / boid_list.size()) - position) - velocity).normalized()
-	if close_boids:
-		separation = (((separation / close_boids.size()) - position) - velocity).normalized()
-	return { "cohesion": cohesion, "alignment": alignment, "separation": separation }
+			close_boids += 1
+			separation += (position - boid.position)
+	cohesion = ((cohesion / boid_list.size()) - position)
+	alignment = ((alignment / boid_list.size()))
+	if close_boids > 0:
+		separation /= close_boids
+	return [ alignment.normalized(), cohesion.normalized(), separation ]
 
 
 func check_for_offscreen():
 		if position.x < 0:
 			position.x = screensize.x
-		if position.x > screensize.x:
+		elif position.x > screensize.x:
 			position.x = 0
 		if position.y < 0:
 			position.y = screensize.y
-		if position.y > screensize.y:
+		elif position.y > screensize.y:
 			position.y = 0
 
 
